@@ -371,7 +371,7 @@ class Sina(Vendor):
             todayAll = DataFrame(todayAll)
         return todayAll
 
-    def get_symbols(self, stockTypeList=["hs_a", "hs_b"], dataframe=True):
+    def get_symbols(self, stockTypeList=["hs_a"], dataframe=True):
         """
         用于获取当日股票列表
         返回： list
@@ -381,6 +381,12 @@ class Sina(Vendor):
                 默认：["hs_a","hs_b"] 代表获取全部沪深AB代码
         """
         symbolList = list()
+        bfile = open('blacklist.txt')
+        blist = list()
+        blist = bfile.readlines()
+        ffile = open('fenji_fund.txt')
+        flist = list()
+        flist = ffile.readlines()
         for node in stockTypeList:
             if dataframe:
                 symbols = list(self.get_today_all(node=node)["symbol"])
@@ -389,6 +395,14 @@ class Sina(Vendor):
                 today_all = self.get_today_all(node=node)
                 for i in today_all:
                     symbolList.append(i["symbol"])
+        for black in blist:
+            try:
+                symbolList.remove(black[0:8])
+            except Exception:
+                black = ''
+
+        for fenji in flist:
+                symbolList.append(fenji[0:8])
         return symbolList
 
     def get_quote(self, symbols, dataframe=True):
