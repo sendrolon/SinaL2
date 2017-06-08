@@ -165,7 +165,9 @@ class Sina(Vendor):
         passwd = rsa.encrypt(message.encode('utf-8'), key)
         return binascii.b2a_hex(passwd).decode('ascii')
 
+    @asyncio.coroutine
     def get_deal(self, symbol, stime=None, etime=None):
+        print('get_deal:' + symbol)
         while not self.is_login:
             self.is_login = self.login()
 
@@ -203,6 +205,7 @@ class Sina(Vendor):
         )
         if not(len(l2df) == 0):
             l2df = l2df.set_index("index").sort_index("index")
+        print("get_deal finished:")
         return l2df
 
     # sz,sh的时间戳不同，强烈建议分开调用

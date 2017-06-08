@@ -97,6 +97,17 @@ class SinaL2:
         return qlist
 
     @asyncio.coroutine
+    def offline_download(self, symbol_list):
+        print("offline_download start+")
+        for symbol in symbol_list:
+            try:
+                result = self.sina.get_deal(symbol)
+                filename = 'csv/' + symbol + '.csv'
+                result.to_csv(filename)
+            except Exception as e:
+                self.logger.error(e)
+
+    @asyncio.coroutine
     def create_ws(self, qlist, symbol_list):
         retry = True
         while retry:
@@ -186,6 +197,25 @@ class SinaL2:
             self.logger.warning("token获取失败第{}次，待会儿重试".format(
                 self.websockets[symbol]["trial_times"]))
 
+    def offline_download_creator(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        symbol_list = self.symbols
+        # Cut symbol_list
+        #step = int(64 / 8)
+        step = 64
+        symbol_list_slice = [
+            symbol_list[i: i + step]
+            for i in range(0, len(symbol_list), step)
+        ]
+
+        tasks = list()
+        for symbol_list in symbol_list_slice:
+            tasks.append(self.offline_download(symbol_list))
+            print('sendrolon tasks append.')
+        loop.run_until_complete(asyncio.wait(tasks))
+        loop.close()
+
     def websocket_creator(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -262,6 +292,20 @@ class SinaL2:
         :return:
         """
         self.stopped = True
+
+    def start_offline(self):
+        self.is_login = self.login()
+
+        if not self.is_login:
+            raise NotLoginError
+
+        self.stopped = False
+        self.terminated = False
+        offline_thread = threading.Thread(target=self.offline_download_creator)
+
+        offline_thread.start()
+        offline_thread.join()
+        self.logger.info("Offline download done.")
 
     def start(self):
         """
