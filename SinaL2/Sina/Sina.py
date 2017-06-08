@@ -314,64 +314,80 @@ class Sina(Vendor):
         import time
 
         # start = time.time()
-        retry = True
-        while retry:
-            try:
-                response = self.session.get(
-                    URL_API_MARKET_CENTER_GETHQNODEDATA(node),
-                    headers=HEADERS_GET_TODAY_ALL,
-                    timeout=3
-                ).text
-                retry = False
-            except Exception as e:
-                print(e)
-                print("正在重试...")
-        # 因为返回的json不标准，需要给key加上引号
-        response = response.replace(
-            "symbol", "\"symbol\""
-        ).replace(
-            "code", "\"code\""
-        ).replace(
-            "name", "\"name\""
-        ).replace(
-            "trade", "\"trade\""
-        ).replace(
-            "pricechange", "\"pricechange\""
-        ).replace(
-            "pricepercent", "\"pricepercent\""
-        ).replace(
-            "buy", "\"buy\""
-        ).replace(
-            "sell", "\"sell\""
-        ).replace(
-            "settlement", "\"settlement\""
-        ).replace(
-            "open", "\"open\""
-        ).replace(
-            "high", "\"high\""
-        ).replace(
-            "low", "\"low\""
-        ).replace(
-            "volume", "\"volume\""
-        ).replace(
-            "amount", "\"amount\""
-        ).replace(
-            "ticktime", "\"ticktime\""
-        ).replace(
-            "per", "\"per\""
-        ).replace(
-            "pb", "\"pb\""
-        ).replace(
-            "mktcap", "\"mktcap\""
-        ).replace(
-            "nmc", "\"nmc\""
-        ).replace(
-            "turnoverratio", "\"turnoverratio\""
-        ).replace("change\"per\"cent", "\"changepercent\"")
-        # print(time.time()-start)
-        todayAll = json.loads(response)
-        if dataframe:
-            todayAll = DataFrame(todayAll)
+        todayAll = DataFrame()
+        redo = True
+        page = 1
+        while redo:
+                retry = True
+                while retry:
+                    try:
+                        response = self.session.get(
+                            URL_API_MARKET_CENTER_GETHQNODEDATA_PAGE(node, page),
+                            headers=HEADERS_GET_TODAY_ALL,
+                            timeout=9
+                        ).text
+                        retry = False
+                   #     print(response)
+                        if response == 'null':
+                            redo = False
+                    except Exception as e:
+                        print(e)
+                        print("正在重试...")
+                # 因为返回的json不标准，需要给key加上引号
+                try:
+                        response = response.replace(
+                            "symbol", "\"symbol\""
+                        ).replace(
+                            "code", "\"code\""
+                        ).replace(
+                            "name", "\"name\""
+                        ).replace(
+                            "trade", "\"trade\""
+                        ).replace(
+                            "pricechange", "\"pricechange\""
+                        ).replace(
+                            "pricepercent", "\"pricepercent\""
+                        ).replace(
+                            "buy", "\"buy\""
+                        ).replace(
+                            "sell", "\"sell\""
+                        ).replace(
+                            "settlement", "\"settlement\""
+                        ).replace(
+                            "open", "\"open\""
+                        ).replace(
+                            "high", "\"high\""
+                        ).replace(
+                            "low", "\"low\""
+                        ).replace(
+                            "volume", "\"volume\""
+                        ).replace(
+                            "amount", "\"amount\""
+                        ).replace(
+                            "ticktime", "\"ticktime\""
+                        ).replace(
+                            "per", "\"per\""
+                        ).replace(
+                            "pb", "\"pb\""
+                        ).replace(
+                            "mktcap", "\"mktcap\""
+                        ).replace(
+                            "nmc", "\"nmc\""
+                        ).replace(
+                            "turnoverratio", "\"turnoverratio\""
+                        ).replace("change\"per\"cent", "\"changepercent\"")
+                        # print(time.time()-start)
+                        # todayAll = json.loads(response)
+                        todayPiece = json.loads(response)
+                        if dataframe:
+                            todayPiece = DataFrame(todayPiece)
+                        todayAll = todayAll.append(todayPiece)
+                        page = page + 1
+                except Exception as e:
+                        print(e)
+                        redo = False
+       # if dataframe:
+       #     todayAll = DataFrame(todayAll)
         return todayAll
 
     def get_symbols(self, stockTypeList=["hs_a"], dataframe=True):

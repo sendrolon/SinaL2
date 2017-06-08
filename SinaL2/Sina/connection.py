@@ -115,6 +115,7 @@ CROSSDOMAIN_HOST = [
 URL_L2HIST = 'http://stock.finance.sina.com.cn/stock/api/openapi.php/StockLevel2Service.getTransactionList'
 # 获取
 URL_API_MARKET_CENTER_GETHQNODEDATA = lambda node: "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?num=5000&sort=symbol&asc=0&node=%s&symbol=&_s_r_a=page&page=1" % node
+URL_API_MARKET_CENTER_GETHQNODEDATA_PAGE = lambda node, page: "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?num=5000&sort=symbol&asc=0&node=%s&symbol=&_s_r_a=page&page=%d" % (node, page)
 # node = hs_a, hs_b
 # 数据格式中key缺少双引号
 # [
